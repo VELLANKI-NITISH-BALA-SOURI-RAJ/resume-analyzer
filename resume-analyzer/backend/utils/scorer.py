@@ -1,5 +1,5 @@
 from typing import List, Dict
-from .skill_extractor import get_skill_category
+from backend.utils.skill_extractor import get_skill_category
 
 # Category weights — higher = more important for scoring
 CATEGORY_WEIGHTS = {
