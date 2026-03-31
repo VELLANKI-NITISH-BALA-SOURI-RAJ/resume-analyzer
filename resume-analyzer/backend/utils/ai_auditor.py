@@ -3,20 +3,17 @@ import json
 import google.generativeai as genai
 from typing import List, Dict
 
-# Get API Key from Environment Variable
-# Alignment check: We use GEMINI_API_KEY from .env
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
 def generate_ai_suggestions(missing_skills: List[str], job_context: str = "") -> List[Dict]:
     """
     Generate high-quality course suggestions and learning paths using Gemini.
     Specifically pulls NEW courses for any skill not in the predefined list.
     """
-    if not GEMINI_API_KEY:
-        print("// NEURAL AUDIT ERROR: GEMINI API KEY MISSING.")
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        print("// NEURAL AUDIT ERROR: GEMINI API KEY NOT DETECTED IN ENVIRONMENT.")
         return []
         
-    genai.configure(api_key=GEMINI_API_KEY)
+    genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-1.5-flash')
     
     prompt = f"""
@@ -42,15 +39,22 @@ def generate_ai_suggestions(missing_skills: List[str], job_context: str = "") ->
     try:
         response = model.generate_content(prompt)
         text = response.text.strip()
-        # Clean potential markdown
-        if text.startswith("```"):
+        
+        # Clean specific markdown wrappers
+        if "```" in text:
             text = text.split("```")[1]
             if text.startswith("json"):
                 text = text[4:]
         
-        return json.loads(text)
+        results = json.loads(text.strip())
+        if not results:
+            print("// NEURAL AUDIT: GEMINI RETURNED EMPTY RESULTS.")
+        return results
     except Exception as e:
-        print(f"// GEMINI AUDIT FAILURE: {e}")
+        print(f"// NEURAL AUDIT [GEMINI] FAILED. ERROR: {e}")
+        # Log the raw text for debugging if it failed during parsing
+        try: print(f"// RAW GEMINI OUTPUT: {response.text[:200]}...")
+        except: pass
         return []
 
 def get_static_suggestions(missing_skills: List[str]) -> List[Dict]:
