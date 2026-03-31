@@ -3,54 +3,61 @@ import json
 import google.generativeai as genai
 from typing import List, Dict
 
-# Get API Key from Environment Variable (Render Setup)
-# Get your key here: https://aistudio.google.com/
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-
-if GOOGLE_API_KEY:
-    genai.configure(api_key=GOOGLE_API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+# Get API Key from Environment Variable
+# Alignment check: We use GEMINI_API_KEY from .env
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 def generate_ai_suggestions(missing_skills: List[str], job_context: str = "") -> List[Dict]:
     """
     Generate high-quality course suggestions and learning paths using Gemini.
+    Specifically pulls NEW courses for any skill not in the predefined list.
     """
-    if not GOOGLE_API_KEY:
-        return [] # Fallback to static if key not provided
+    if not GEMINI_API_KEY:
+        print("// NEURAL AUDIT ERROR: GEMINI API KEY MISSING.")
+        return []
         
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    
     prompt = f"""
-    You are an Elite Career Auditor. I have found the following 'Neural Discrepancies' (missing skills) 
-    in a candidate's resume for a role with this context: "{job_context[:300]}".
+    You are an Elite Career Technical Auditor. Analyze these missing skills for a role with context: "{job_context[:300]}".
     
-    FOR EACH MISSING SKILL:
-    1. Identify the BEST high-quality, reputable, and specific course (Coursera, edX, Udemy, or official documentation).
-    2. Provide a DIRECT URL to that course.
-    3. Write a short, authoritative 'Actionable Protocol' (learning path).
+    FOR THE FOLLOWING SKILLS: {", ".join(missing_skills)}
     
-    Skills to analyze: {", ".join(missing_skills)}
+    1. Find the BEST reputable course (Coursera, Udemy, edX, or Official Docs).
+    2. Provide a REAL direct URL to that specific course.
+    3. Provide a 2-step 'Actionable Learning Protocol'.
     
-    RETURN ONLY A JSON ARRAY like this:
+    RETURN ONLY JSON (No markdown blocks, no text):
     [
       {{
         "skill": "skill_name",
         "resources": ["Step 1", "Step 2"],
-        "course_url": "https://example.com/course",
-        "priority": "high/medium/low"
+        "course_url": "https://direct-course-link.com",
+        "priority": "high"
       }}
     ]
     """
     
     try:
         response = model.generate_content(prompt)
-        # Handle cases where Gemini might return markdown blocks
-        clean_json = response.text.strip().replace("```json", "").replace("```", "")
-        return json.loads(clean_json)
+        text = response.text.strip()
+        # Clean potential markdown
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        
+        return json.loads(text)
     except Exception as e:
-        print(f"Gemini Error: {e}")
+        print(f"// GEMINI AUDIT FAILURE: {e}")
         return []
 
 def get_static_suggestions(missing_skills: List[str]) -> List[Dict]:
-    # (Keeping our highly curated dictionary as a fallback)
+    """
+    Static fallback for basic skills.
+    """
+    # Import locally to avoid circular deps
     from backend.utils.suggestions_dict import SKILL_SUGGESTIONS, DEFAULT_SUGGESTION
     
     suggestions = []
@@ -60,12 +67,7 @@ def get_static_suggestions(missing_skills: List[str]) -> List[Dict]:
         suggestions.append({
             "skill": skill,
             "resources": info.get("resources", []),
-            "course_url": info.get("course_url") if "course_url" in info else f"https://www.google.com/search?q=learn+{skill.replace(' ', '+')}",
-            "priority": _get_priority(skill_lower)
+            "course_url": info.get("course_url") if "course_url" in info else f"https://www.google.com/search?q=best+course+to+learn+{skill.replace(' ', '+')}",
+            "priority": "high"
         })
     return suggestions
-
-def _get_priority(skill: str) -> str:
-    high = ["python", "javascript", "java", "aws", "docker", "kubernetes", "ml", "sql", "git"]
-    if skill in high: return "high"
-    return "medium"
