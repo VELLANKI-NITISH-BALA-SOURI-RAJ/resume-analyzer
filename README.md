@@ -1,41 +1,63 @@
 # 🚀 AI Resume Analyzer & Job Matcher
 
-An AI-powered system that analyzes resumes and matches them with job descriptions using NLP and semantic similarity.
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green)
+![NLP](https://img.shields.io/badge/NLP-Transformers-orange)
+![Status](https://img.shields.io/badge/Status-Active-success)
+
+---
+
+## 🔗 Live Demo
+👉 *Add your live link here when deployed* (e.g., https://resume-matcher.up.railway.app)
 
 ---
 
 ## 📌 Overview
 
-This project uses **Hugging Face Transformers (BERT)** and **Sentence Transformers** to:
+An AI-powered system that analyzes resumes and matches them with job descriptions using **semantic NLP**. 
 
-- Extract skills from resumes
-- Analyze job descriptions
-- Compute match scores (0–100)
-- Identify missing skills
-- Generate improvement suggestions
+Unlike traditional keyword-matching systems, this project understands **contextual meaning** using Transformers and provides:
+
+* **Match Score** (0–100)
+* **Matched Skills** vs. **Missing Skills**
+* **Actionable Improvement Suggestions**
 
 ---
 
 ## 🧠 Features
 
-- 📄 Resume upload (PDF support)
-- 🔍 Skill extraction using NLP
-- 🧩 Semantic job matching (not keyword-based)
-- 📊 Match score with insights
-- ⚠️ Missing skills detection
-- 💡 Personalized improvement suggestions
-- 🌐 REST API + Web Interface
+* 📄 **Resume Upload:** Supports PDF parsing.
+* 🔍 **Skill Extraction:** Rule-based identification of technical proficiencies.
+* 🤖 **Semantic Matching:** Leverages BERT embeddings for deeper context.
+* 📊 **Intelligent Scoring:** Weighted scoring system for accurate assessment.
+* 🌐 **REST API:** Fast and lightweight backend powered by FastAPI.
 
 ---
 
 ## ⚙️ Tech Stack
 
-- **NLP:** :contentReference[oaicite:0]{index=0}, Sentence Transformers  
-- **Backend:** FastAPI  
-- **Frontend:** HTML, CSS, JavaScript  
-- **PDF Processing:** pdfplumber  
-- **Similarity:** Cosine Similarity  
+* **Backend:** FastAPI, Uvicorn
+* **NLP:** Sentence Transformers (`all-MiniLM-L6-v2`)
+* **ML:** Scikit-learn (Cosine Similarity)
+* **Processing:** pdfplumber, Regex
 
 ---
 
 ## 🏗️ Architecture
+
+```text
+Resume + Job Description
+       ↓
+  PDF Parsing
+       ↓
+Skill Extraction
+       ↓
+Embedding Generation
+       ↓
+Cosine Similarity
+       ↓
+Score Calculation
+       ↓
+  Suggestions
+       ↓
+  API Response
