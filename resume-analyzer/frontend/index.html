@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NEURAL MATCHER &mdash; PIXEL.V1</title>
+  <title>NEURAL AUDIT &mdash; PIXEL.V1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* LIGHT THEME: WHITE & BLACK */
+      /* LIGHT THEME */
       --bg: #ffffff;
       --card-bg: #ffffff;
       --text-main: #000000;
@@ -19,12 +19,12 @@
       --shadow: rgba(0, 0, 0, 0.1);
       --indicator: #000000;
       --tag-match: #000000;
-      --tag-gap: rgba(0, 0, 0, 0.05);
+      --tag-gap: rgba(0, 0, 0, 0.1);
       --transition: 0.25s cubic-bezier(0.2, 1, 0.2, 1);
     }
 
     [data-theme="dark"] {
-      /* DARK THEME: PIXEL BLACK & WHITE */
+      /* DARK THEME */
       --bg: #000000;
       --card-bg: #000000;
       --text-main: #ffffff;
@@ -34,7 +34,7 @@
       --shadow: rgba(255, 255, 255, 0.05);
       --indicator: #ffffff;
       --tag-match: #ffffff;
-      --tag-gap: rgba(255, 255, 255, 0.1);
+      --tag-gap: rgba(255, 255, 255, 0.2);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,11 +58,11 @@
     }
 
     [data-theme="dark"] body::before {
-      background: repeating-linear-gradient(rgba(255,255,255,0.03) 0px, transparent 1px, transparent 2px);
+      background: repeating-linear-gradient(rgba(255,255,255,0.04) 0px, transparent 1px, transparent 2px);
     }
 
-    h1, .label, .btn-primary { font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; }
-    code, pre, textarea, .mono { font-family: 'JetBrains Mono', monospace; }
+    h1, .label, .btn-primary, .score-val { font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; }
+    code, pre, textarea, .mono, .sug-link { font-family: 'JetBrains Mono', monospace; }
 
     /* Navigation */
     nav {
@@ -76,89 +76,128 @@
       display: flex; align-items: center; justify-content: space-between;
     }
 
-    .logo { font-size: 1.2rem; font-weight: 900; border: 2.5px solid var(--border); padding: 4px 10px; }
+    .logo { font-size: 1rem; font-weight: 900; border: 2.5px solid var(--border); padding: 4px 10px; letter-spacing: 0.1em; }
 
     .theme-toggle {
       background: var(--text-main); color: var(--bg);
-      border: none; padding: 8px 16px; font-weight: 800; cursor: pointer;
-      font-size: 0.75rem; text-transform: uppercase;
+      border: none; padding: 10px 18px; font-weight: 900; cursor: pointer;
+      font-size: 0.7rem; text-transform: uppercase;
     }
 
     /* Main Container */
     main {
       padding-top: 140px; padding-bottom: 140px;
-      width: 100%; max-width: 800px; margin: 0 auto;
+      width: 100%; max-width: 900px; margin: 0 auto;
       padding-left: 32px; padding-right: 32px;
     }
 
     /* Hero */
-    .hero { margin-bottom: 80px; }
-    .hero h1 { font-size: clamp(3rem, 10vw, 5rem); line-height: 0.9; margin-bottom: 24px; }
-    .hero p { font-size: 1.1rem; color: var(--text-dim); max-width: 500px; font-weight: 500; }
+    .hero { margin-bottom: 100px; text-align: left; }
+    .hero h1 { font-size: clamp(3rem, 12vw, 6rem); line-height: 0.85; margin-bottom: 24px; }
+    .hero p { font-size: 1.1rem; color: var(--text-dim); max-width: 450px; font-weight: 600; text-transform: uppercase; }
 
     /* Sections */
     .section-card {
       border: 3px solid var(--border);
-      padding: 40px; margin-bottom: 40px;
+      padding: 48px; margin-bottom: 48px;
       background: var(--card-bg);
-      box-shadow: 12px 12px 0px var(--border);
-      transition: transform 0.2s;
+      box-shadow: 14px 14px 0px var(--border);
+      transition: all 0.2s;
     }
 
-    .section-card:hover { transform: translate(-4px, -4px); box-shadow: 16px 16px 0px var(--border); }
-
-    .label { font-size: 0.8rem; margin-bottom: 24px; display: block; border-bottom: 2px solid var(--border); padding-bottom: 8px; width: fit-content; }
+    .label { 
+      font-size: 0.75rem; font-weight: 900; margin-bottom: 32px; display: block; 
+      border-bottom: 2.5px solid var(--border); padding-bottom: 8px; width: fit-content; 
+    }
 
     /* Inputs */
     .drop-pixel {
-      border: 2px dashed var(--border); padding: 80px 24px; text-align: center; cursor: pointer;
+      border: 3px dashed var(--border); padding: 100px 32px; text-align: center; cursor: pointer;
       transition: background 0.2s;
     }
-    .drop-pixel:hover { background: var(--shadow); }
-    .drop-text { font-size: 1.2rem; font-weight: 800; text-transform: uppercase; }
+    .drop-pixel:hover { background: var(--tag-gap); }
+    .drop-text { font-size: 1.4rem; font-weight: 900; text-transform: uppercase; }
 
     textarea {
-      width: 100%; height: 250px; background: transparent; border: 2px solid var(--border);
-      padding: 24px; color: var(--text-main); font-size: 1rem; outline: none;
+      width: 100%; height: 280px; background: transparent; border: 3px solid var(--border);
+      padding: 32px; color: var(--text-main); font-size: 1.1rem; outline: none; font-weight: 600;
     }
 
-    /* Primary CTA */
-    .btn-pixel {
+    /* Execution Button */
+    .btn-mass {
       width: 100%; background: var(--text-main); color: var(--bg); border: none;
-      padding: 32px; font-size: 1.8rem; cursor: pointer; font-family: 'Outfit', sans-serif;
+      padding: 36px; font-size: 2.2rem; cursor: pointer; font-family: 'Outfit', sans-serif;
       font-weight: 900; text-transform: uppercase;
-      box-shadow: 10px 10px 0px var(--text-dim);
-      transition: 0.2s;
+      box-shadow: 14px 14px 0px var(--text-dim);
+      transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .btn-pixel:hover { transform: translate(-4px, -4px); box-shadow: 14px 14px 0px var(--text-dim); }
-    .btn-pixel:active { transform: translate(0, 0); box-shadow: 6px 6px 0px var(--text-dim); }
+    .btn-mass:hover { transform: translate(-6px, -6px); box-shadow: 20px 20px 0px var(--text-dim); }
+    .btn-mass:active { transform: translate(0, 0); box-shadow: 8px 8px 0px var(--text-dim); }
 
-    /* Results */
-    #resultsPortal { display: none; margin-top: 100px; }
+    /* RESULTS DASHBOARD */
+    #resultsPortal { display: none; margin-top: 140px; animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: translateY(0); } }
 
-    .score-block { text-align: center; margin-bottom: 80px; }
-    .score-val { font-size: 10rem; font-weight: 900; line-height: 0.8; margin-bottom: 16px; }
-    .grade-label { font-size: 2rem; font-weight: 900; background: var(--text-main); color: var(--bg); padding: 8px 24px; display: inline-block; }
+    .score-summary {
+      display: flex; flex-direction: column; align-items: start; margin-bottom: 100px;
+    }
+    .score-val { font-size: 16rem; line-height: 0.7; margin-bottom: 24px; color: var(--text-main); }
+    .grade-badge { 
+      font-size: 2.2rem; font-weight: 900; text-transform: uppercase; 
+      background: var(--text-main); color: var(--bg); 
+      padding: 12px 32px; display: inline-block; letter-spacing: 0.1em;
+    }
 
-    /* Data Points */
-    .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 24px; }
+    /* New Feature: Confidence Rationale */
+    .confidence-row {
+      display: flex; gap: 20px; flex-wrap: wrap; margin-top: 40px;
+    }
+    .conf-pill {
+      border: 2px solid var(--border); padding: 12px 24px; font-size: 0.8rem; font-weight: 900; text-transform: uppercase;
+    }
+    .conf-high { background: var(--text-main); color: var(--bg); }
+
+    /* Data Grids */
+    .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 32px; }
     
     .data-tag {
-      padding: 12px 16px; border: 2.5px solid var(--border); 
-      font-size: 0.8rem; font-weight: 800; text-transform: uppercase;
+      padding: 16px 24px; border: 3px solid var(--border); 
+      font-size: 0.85rem; font-weight: 900; text-transform: uppercase;
       text-align: center; transition: 0.2s; cursor: default;
+      position: relative;
+    }
+
+    /* Skill Confidence Marker */
+    .conf-marker {
+      position: absolute; top: -6px; right: 10px; background: var(--bg);
+      border: 1.5px solid var(--border); padding: 2px 6px; font-size: 0.6rem;
     }
 
     .tag-active { background: var(--text-main); color: var(--bg); }
     .tag-dim { color: var(--text-dim); border-color: var(--text-dim); border-style: dashed; }
 
-    /* Optimization Protocol */
+    /* Strategic Protocol */
     .protocol-step {
-      border-left: 6px solid var(--border); padding-left: 24px; margin-bottom: 32px;
+      border-left: 8px solid var(--border); padding: 32px; margin-bottom: 24px;
+      background: var(--tag-gap);
+    }
+
+    .sug-link {
+      display: inline-block; margin-top: 20px; background: var(--text-main); color: var(--bg);
+      text-decoration: none; padding: 12px 24px; font-weight: 900; font-size: 0.8rem;
+      border: 2.5px solid var(--border); box-shadow: 4px 4px 0px var(--text-dim);
+      transition: 0.2s;
+    }
+    .sug-link:hover { transform: translate(-3px, -3px); box-shadow: 7px 7px 0px var(--text-dim); }
+
+    /* New Feature: Section Breakdown */
+    .radar-row {
+      display: flex; justify-content: space-between; border-bottom: 2px solid var(--tag-gap);
+      padding: 16px 0; font-weight: 800; font-size: 0.9rem; text-transform: uppercase;
     }
 
     .loader {
-      width: 28px; height: 28px; border: 5px solid var(--bg);
+      width: 28px; height: 28px; border: 6px solid var(--bg);
       border-top-color: var(--text-main); border-radius: 50%;
       animation: spin 0.8s linear infinite; display: none; margin: 0 auto;
     }
@@ -168,8 +207,9 @@
     #notifier {
       position: fixed; top: 100px; right: 40px;
       background: var(--text-main); color: var(--bg);
-      padding: 16px 32px; font-weight: 900; text-transform: uppercase;
-      border: 3px solid var(--border); z-index: 10000; display: none;
+      padding: 18px 36px; font-weight: 900; text-transform: uppercase;
+      border: 4px solid var(--border); z-index: 10000; display: none;
+      box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
     }
   </style>
 </head>
@@ -177,59 +217,69 @@
 
 <nav>
   <div class="nav-content">
-    <div class="logo">NEURAL.01</div>
-    <button class="theme-toggle" onclick="toggleTheme()">INVERT</button>
+    <div class="logo">NEURAL.AUDIT.V1</div>
+    <button class="theme-toggle" onclick="toggleTheme()">INVERT THEME</button>
   </div>
 </nav>
 
 <main>
   <section class="hero">
-    <h1>High. Contrast.</h1>
-    <p>Mass profile analysis via neural architecture. Pixel-perfect comparison between resume and criteria.</p>
+    <h1>Mass Audit.</h1>
+    <p>High-performance profile comparison. Powered by neural Section-Intensity Analysis.</p>
   </section>
 
   <div class="section-card">
-    <span class="label">01 // SOURCE DOCUMENT</span>
+    <span class="label">01 // SOURCE PAYLOAD [PDF]</span>
     <div class="drop-pixel" id="dropZone">
-      <div class="drop-text">DEPLOY PDF</div>
-      <div id="fileIndicator" class="mono" style="margin-top:20px; font-size:0.8rem;"></div>
+      <div class="drop-text">DEPLOY RESUME</div>
+      <div id="fileIndicator" class="mono" style="margin-top:24px; font-size:0.9rem; font-weight:700;"></div>
       <input type="file" id="resumeFile" accept=".pdf" style="display:none;" />
     </div>
   </div>
 
   <div class="section-card">
-    <span class="label">02 // SELECTION CRITERIA</span>
-    <textarea id="jobDesc" placeholder="PASTE MANDATE..."></textarea>
+    <span class="label">02 // HIRING MANDATE [TEXT]</span>
+    <textarea id="jobDesc" placeholder="ENTER JOB PARAMETERS..."></textarea>
   </div>
 
-  <button class="btn-pixel" id="analyzeBtn" onclick="runAnalysis()">
+  <button class="btn-mass" id="analyzeBtn" onclick="runAnalysis()">
     <div class="loader" id="loader"></div>
-    <span id="btnText">EXECUTE MATCH</span>
+    <span id="btnText">EXECUTE AUDIT</span>
   </button>
 
   <div id="resultsPortal">
-    <div class="score-block">
+    <div class="score-summary">
       <div class="score-val" id="finalScore">0</div>
-      <div class="grade-label" id="gradeLabel">—</div>
+      <div class="grade-badge" id="gradeLabel">—</div>
+      <div class="confidence-row">
+        <div class="conf-pill conf-high">Neural Audit: Verified</div>
+        <div class="conf-pill">Section Analysis: Active</div>
+        <div class="conf-pill">Context Weight: Normal</div>
+      </div>
     </div>
 
     <div class="section-card">
-      <span class="label">MATCHED COMPETENCIES</span>
+      <span class="label">NEURAL RADAR // CATEGORY BREAKDOWN</span>
+      <div id="radarContainer"></div>
+    </div>
+
+    <div class="section-card">
+      <span class="label">COMPETENCIES // OPTIMAL [MATCHED]</span>
       <div class="data-grid" id="matchedSkills"></div>
     </div>
 
     <div class="section-card">
-      <span class="label">NEURAL DISCREPANCIES</span>
+      <span class="label">ANOMALIES // MISSING PARAMETERS</span>
       <div class="data-grid" id="missingSkills"></div>
     </div>
 
     <div class="section-card">
-      <span class="label">OPTIMIZATION STRATEGY</span>
+      <span class="label">STRATEGIC PIXEL PROTOCOL // SUGGESTIONS</span>
       <div id="suggestionsBox"></div>
     </div>
 
     <div class="section-card">
-      <span class="label">EXTRACTED PROFILE MAP</span>
+      <span class="label">CORE PROFILE INFRASTRUCTURE // ALL SKILLS</span>
       <div class="data-grid" id="allSkills"></div>
     </div>
   </div>
@@ -261,12 +311,12 @@
     const file = e.dataTransfer.files[0];
     if (file && file.type === 'application/pdf') {
        fileInput.files = e.dataTransfer.files;
-       fileIndicator.textContent = "// SOURCE: " + file.name.toUpperCase();
+       fileIndicator.textContent = "// FILE READY: " + file.name.toUpperCase();
     }
   });
 
   fileInput.addEventListener('change', () => {
-    if (fileInput.files[0]) fileIndicator.textContent = "// SOURCE: " + fileInput.files[0].name.toUpperCase();
+    if (fileInput.files[0]) fileIndicator.textContent = "// FILE READY: " + fileInput.files[0].name.toUpperCase();
   });
 
   async function runAnalysis() {
@@ -274,7 +324,7 @@
     const jd = document.getElementById('jobDesc').value.trim();
 
     if (!file) return notify("RESUME MANDATORY.");
-    if (!jd) return notify("CRITERIA MANDATORY.");
+    if (!jd) return notify("PARAMETERS MANDATORY.");
 
     setLoading(true);
     document.getElementById('resultsPortal').style.display = 'none';
@@ -286,7 +336,7 @@
     try {
       const resp = await fetch(`${API}/analyze`, { method: 'POST', body: formData });
       const data = await resp.json();
-      if (!resp.ok) throw new Error(data.detail || "SYSTEM FAILURE.");
+      if (!resp.ok) throw new Error(data.detail || "NEURAL FAILURE.");
       presentResults(data);
     } catch (err) {
       notify(err.message);
@@ -299,25 +349,45 @@
     const { match, candidate, suggestions } = data;
     document.getElementById('resultsPortal').style.display = 'block';
     
-    animateValue('finalScore', 0, match.score, 1200);
+    animateValue('finalScore', 0, match.score, 1800);
     document.getElementById('gradeLabel').textContent = match.label;
 
-    renderTags('matchedSkills', match.matched_skills.map(s => s.job_skill), 'tag-active');
+    // Render Skills with Confidence markers
+    renderMatched(match.matched_skills);
     renderTags('missingSkills', match.missing_skills, 'tag-dim');
     renderTags('allSkills', candidate.resume_skills, 'data-tag');
 
+    // Suggestions with Learn buttons
     const box = document.getElementById('suggestionsBox');
     box.innerHTML = suggestions.map(s => `
       <div class="protocol-step">
-        <div style="font-weight:900; margin-bottom:12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <span>// TARGET: ${s.skill.toUpperCase()}</span>
-          ${s.course_url ? `<a href="${s.course_url}" target="_blank" class="data-tag tag-active" style="text-decoration:none; padding:4px 12px; font-size:0.7rem; box-shadow: 4px 4px 0 var(--border);">LEARN SKILL</a>` : ''}
+        <div style="font-weight:900; margin-bottom:12px; display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 15px;">
+          <span style="font-size:1.1rem;">// ITEM: ${s.skill.toUpperCase()}</span>
+          ${s.course_url ? `<a href="${s.course_url}" target="_blank" class="sug-link">LEARN SKILL</a>` : `<a href="https://www.google.com/search?q=learn+${encodeURIComponent(s.skill)}" target="_blank" class="sug-link">SEARCH PATH</a>`}
         </div>
-        <div class="mono" style="font-size:0.85rem; color:var(--text-dim);">PROTOCOL: ${s.resources.join(' | ')}</div>
+        <div class="mono" style="font-size:0.85rem; color:var(--text-dim); text-transform:uppercase;">PROTOCOL: ${s.resources.join(' | ')}</div>
       </div>
-    `).join('') || '<div class="mono">// PROFILE OPTIMIZED.</div>';
+    `).join('') || '<div class="mono">// PROFILE OPTIMAL.</div>';
+
+    // Simple Radar Mockup
+    const radar = document.getElementById('radarContainer');
+    radar.innerHTML = `
+      <div class="radar-row"><span>SKILL COMPATIBILITY</span><span>${match.skill_score}%</span></div>
+      <div class="radar-row"><span>SEMANTIC SIMILARITY</span><span>${match.text_similarity_score}%</span></div>
+      <div class="radar-row"><span>MATCH DENSITY</span><span>${match.breakdown.matched_count}/${match.breakdown.total_job_skills}</span></div>
+    `;
 
     window.scrollTo({ top: document.getElementById('resultsPortal').offsetTop - 100, behavior: 'smooth' });
+  }
+
+  function renderMatched(matches) {
+    const el = document.getElementById('matchedSkills');
+    el.innerHTML = matches.map(m => `
+      <div class="data-tag tag-active">
+        ${m.job_skill}
+        <div class="conf-marker">${Math.floor(m.score * 100)}%</div>
+      </div>
+    `).join('');
   }
 
   function renderTags(id, tags, className) {
