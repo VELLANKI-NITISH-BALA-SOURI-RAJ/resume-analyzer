@@ -1,4 +1,4 @@
-# 🚀 AI Resume Analyzer & Job Matcher
+#  AI Resume Analyzer & Job Matcher
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green)
@@ -8,7 +8,7 @@
 ---
 
 ## 🔗 Live Demo
-👉 *Add your live link here when deployed* (e.g., https://resume-matcher.up.railway.app)
+👉 *Add your live link here when deployed* (https://resume-analyzer-m7op.onrender.com/)
 
 ---
 
