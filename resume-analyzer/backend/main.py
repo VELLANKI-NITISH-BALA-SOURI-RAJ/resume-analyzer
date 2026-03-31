@@ -83,8 +83,8 @@ async def analyze_resume(
         text_sim
     )
 
-    # Step 6: Suggestions
-    suggestions = generate_suggestions(match_result["missing_skills"])
+    # Step 6: Suggestions (AI Audit)
+    suggestions = generate_suggestions(match_result["missing_skills"], job_description)
 
     return {
         "status": "success",
