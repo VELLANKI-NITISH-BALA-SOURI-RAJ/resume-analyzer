@@ -309,7 +309,10 @@
     const box = document.getElementById('suggestionsBox');
     box.innerHTML = suggestions.map(s => `
       <div class="protocol-step">
-        <div style="font-weight:900; margin-bottom:8px;">// TARGET: ${s.skill.toUpperCase()}</div>
+        <div style="font-weight:900; margin-bottom:12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <span>// TARGET: ${s.skill.toUpperCase()}</span>
+          ${s.course_url ? `<a href="${s.course_url}" target="_blank" class="data-tag tag-active" style="text-decoration:none; padding:4px 12px; font-size:0.7rem; box-shadow: 4px 4px 0 var(--border);">LEARN SKILL</a>` : ''}
+        </div>
         <div class="mono" style="font-size:0.85rem; color:var(--text-dim);">PROTOCOL: ${s.resources.join(' | ')}</div>
       </div>
     `).join('') || '<div class="mono">// PROFILE OPTIMIZED.</div>';
