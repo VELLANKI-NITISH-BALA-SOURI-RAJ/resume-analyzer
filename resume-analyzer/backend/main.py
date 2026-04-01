@@ -15,7 +15,6 @@ from backend.utils.pdf_extractor import extract_text_from_pdf
 from backend.utils.skill_extractor import extract_skills
 from backend.utils.matcher import compute_skill_similarity, compute_text_similarity
 from backend.utils.scorer import calculate_weighted_score, get_score_label
-from backend.utils.suggestions import generate_suggestions
 
 print(f"// NEURAL AUDIT INITIATED. KEY DETECTED: {'YES' if os.environ.get('GEMINI_API_KEY') else 'NO'}")
 
