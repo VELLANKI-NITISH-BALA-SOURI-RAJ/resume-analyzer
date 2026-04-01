@@ -6,10 +6,10 @@ from typing import List, Dict, Optional
 # Get API Key from Environment Variable
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-def perform_full_audit(resume_text: str, job_description: str) -> Dict:
+def perform_full_audit(resume_text: str, job_description: str, bert_results: Dict, bert_score: float) -> Dict:
     """
-    Perform a complete AI-first audit to determine the final match score,
-    matched skills, and missing skills with high-quality course links.
+    Hybrid Neural Audit: Takes local BERT results and uses Gemini to refine 
+    the context-aware score and course suggestions.
     """
     if not GEMINI_API_KEY:
         print("// NEURAL AUDIT ERROR: GEMINI API KEY NOT DETECTED.")
@@ -19,27 +19,30 @@ def perform_full_audit(resume_text: str, job_description: str) -> Dict:
     model = genai.GenerativeModel('gemini-1.5-flash')
     
     prompt = f"""
-    You are an Elite Technical Recruiter performing a "Dhurandhar" Neural Audit.
-    Analyze this Resume against the Job Description. Be strictly objective but recognize synonyms.
+    You are a Senior Neural Auditor reviewing a Local Technical Match (BERT).
     
-    RESUME TEXT:
-    {resume_text[:4000]}
+    LOCAL AUDIT DATA (BERT):
+    - Raw Compatibility Score: {bert_score}%
+    - Detected Matches: {", ".join([m['job_skill'] for m in bert_results['matched_skills']])}
+    - Identified Gaps: {", ".join(bert_results['missing_skills'])}
     
-    JOB DESCRIPTION:
-    {job_description[:4000]}
+    RESUME CONTEXT:
+    {resume_text[:3000]}
+    
+    JOB MANDATE:
+    {job_description[:3000]}
     
     TASKS:
-    1. Determine a Final Match Score (0-100) based on actual competency and experience depth.
-    2. Identify "Optimal Matches": Specifically, what critical skills from the JD are found in the resume.
-    3. Identify "Neural Discrepancies": Critical JD skills missing in the resume.
-    4. FOR EVERY MISSING SKILL: Provide a DIRECT URL to a high-quality learning course (Coursera, Udemy, or Official Docs).
-    5. Provide a 1-sentence "Technical Rationale" for the score.
+    1. Review the BERT Score ({bert_score}%). Refine it into a 'Context Match Score' (0-100).
+    2. Analyze 'Identified Gaps'. If the resume actually has experience related to these gaps (synonyms), mark them as 'Partial Matches'.
+    3. FOR TRUE MISSING SKILLS: Provide a DIRECT high-quality course URL (Coursera, edX, or Official Docs).
+    4. Provide a 'Reviewer Rationale': Explain WHY you adjusted the score from the BERT base.
     
-    RETURN ONLY RAW JSON (No markdown blocks, no text):
+    RETURN ONLY RAW JSON:
     {{
-      "score": 85,
+      "score": 78,
       "label": "Strong Match",
-      "rationale": "High competency in Python/ML but missing deep AWS deployment cloud experience.",
+      "rationale": "BERT gave a low score due to synonym mismatches, but the experience in 'Neural Nets' covers the 'Deep Learning' requirement.",
       "matched": ["skill1", "skill2"],
       "missing": [
         {{
