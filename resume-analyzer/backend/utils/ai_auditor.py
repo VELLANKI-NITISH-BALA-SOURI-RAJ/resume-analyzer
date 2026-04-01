@@ -1,77 +1,82 @@
 import os
 import json
 import google.generativeai as genai
-from typing import List, Dict
+from typing import List, Dict, Optional
 
-def generate_ai_suggestions(missing_skills: List[str], job_context: str = "") -> List[Dict]:
+# Get API Key from Environment Variable
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+def perform_full_audit(resume_text: str, job_description: str) -> Dict:
     """
-    Generate high-quality course suggestions and learning paths using Gemini.
-    Specifically pulls NEW courses for any skill not in the predefined list.
+    Perform a complete AI-first audit to determine the final match score,
+    matched skills, and missing skills with high-quality course links.
     """
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        print("// NEURAL AUDIT ERROR: GEMINI API KEY NOT DETECTED IN ENVIRONMENT.")
-        return []
-        
-    genai.configure(api_key=api_key)
+    if not GEMINI_API_KEY:
+        print("// NEURAL AUDIT ERROR: GEMINI API KEY NOT DETECTED.")
+        return {}
+
+    genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel('gemini-1.5-flash')
     
     prompt = f"""
-    You are an Elite Career Technical Auditor. Analyze these missing skills for a role with context: "{job_context[:300]}".
+    You are an Elite Technical Recruiter performing a "Dhurandhar" Neural Audit.
+    Analyze this Resume against the Job Description. Be strictly objective but recognize synonyms.
     
-    FOR THE FOLLOWING SKILLS: {", ".join(missing_skills)}
+    RESUME TEXT:
+    {resume_text[:4000]}
     
-    1. Find the BEST reputable course (Coursera, Udemy, edX, or Official Docs).
-    2. Provide a REAL direct URL to that specific course.
-    3. Provide a 2-step 'Actionable Learning Protocol'.
+    JOB DESCRIPTION:
+    {job_description[:4000]}
     
-    RETURN ONLY JSON (No markdown blocks, no text):
-    [
-      {{
-        "skill": "skill_name",
-        "resources": ["Step 1", "Step 2"],
-        "course_url": "https://direct-course-link.com",
-        "priority": "high"
-      }}
-    ]
+    TASKS:
+    1. Determine a Final Match Score (0-100) based on actual competency and experience depth.
+    2. Identify "Optimal Matches": Specifically, what critical skills from the JD are found in the resume.
+    3. Identify "Neural Discrepancies": Critical JD skills missing in the resume.
+    4. FOR EVERY MISSING SKILL: Provide a DIRECT URL to a high-quality learning course (Coursera, Udemy, or Official Docs).
+    5. Provide a 1-sentence "Technical Rationale" for the score.
+    
+    RETURN ONLY RAW JSON (No markdown blocks, no text):
+    {{
+      "score": 85,
+      "label": "Strong Match",
+      "rationale": "High competency in Python/ML but missing deep AWS deployment cloud experience.",
+      "matched": ["skill1", "skill2"],
+      "missing": [
+        {{
+          "skill": "skill_name",
+          "protocol": "Step 1 | Step 2",
+          "course_url": "https://direct-link-to-course.com"
+        }}
+      ]
+    }}
     """
     
     try:
         response = model.generate_content(prompt)
         text = response.text.strip()
-        
-        # Clean specific markdown wrappers
         if "```" in text:
             text = text.split("```")[1]
             if text.startswith("json"):
                 text = text[4:]
         
-        results = json.loads(text.strip())
-        if not results:
-            print("// NEURAL AUDIT: GEMINI RETURNED EMPTY RESULTS.")
-        return results
+        audit_data = json.loads(text.strip())
+        return audit_data
     except Exception as e:
-        print(f"// NEURAL AUDIT [GEMINI] FAILED. ERROR: {e}")
-        # Log the raw text for debugging if it failed during parsing
-        try: print(f"// RAW GEMINI OUTPUT: {response.text[:200]}...")
-        except: pass
-        return []
+        print(f"// NEURAL AUDIT [FULL] FAILED. ERROR: {e}")
+        return {}
 
-def get_static_suggestions(missing_skills: List[str]) -> List[Dict]:
+def get_static_fallback(missing_skills: List[str]) -> List[Dict]:
     """
-    Static fallback for basic skills.
+    Static fallback if Gemini fails.
     """
-    # Import locally to avoid circular deps
     from backend.utils.suggestions_dict import SKILL_SUGGESTIONS, DEFAULT_SUGGESTION
-    
     suggestions = []
     for skill in missing_skills:
         skill_lower = skill.lower()
         info = SKILL_SUGGESTIONS.get(skill_lower, DEFAULT_SUGGESTION)
         suggestions.append({
             "skill": skill,
-            "resources": info.get("resources", []),
-            "course_url": info.get("course_url") if "course_url" in info else f"https://www.google.com/search?q=best+course+to+learn+{skill.replace(' ', '+')}",
-            "priority": "high"
+            "protocol": " | ".join(info.get("resources", [])),
+            "course_url": info.get("course_url") if "course_url" in info else f"https://www.google.com/search?q=best+course+to+learn+{skill.replace(' ', '+')}"
         })
     return suggestions

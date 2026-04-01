@@ -251,10 +251,11 @@
     <div class="score-summary">
       <div class="score-val" id="finalScore">0</div>
       <div class="grade-badge" id="gradeLabel">—</div>
+      <div id="auditRationale" class="mono" style="margin-top:24px; font-size:0.9rem; color:var(--text-dim); max-width:600px; line-height:1.6; text-transform:uppercase;">// INITIALIZING AUDIT PROTOCOL...</div>
       <div class="confidence-row">
         <div class="conf-pill conf-high">Neural Audit: Verified</div>
         <div class="conf-pill">Section Analysis: Active</div>
-        <div class="conf-pill">Context Weight: Normal</div>
+        <div class="conf-pill">Gemini Audit: Live</div>
       </div>
     </div>
 
@@ -351,8 +352,9 @@
     
     animateValue('finalScore', 0, match.score, 1800);
     document.getElementById('gradeLabel').textContent = match.label;
+    document.getElementById('auditRationale').textContent = "// AUDIT RATIONALE: " + match.rationale;
 
-    // Render Skills with Confidence markers
+    // Render Skills
     renderMatched(match.matched_skills);
     renderTags('missingSkills', match.missing_skills, 'tag-dim');
     renderTags('allSkills', candidate.resume_skills, 'data-tag');
@@ -362,10 +364,10 @@
     box.innerHTML = suggestions.map(s => `
       <div class="protocol-step">
         <div style="font-weight:900; margin-bottom:12px; display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 15px;">
-          <span style="font-size:1.1rem;">// ITEM: ${s.skill.toUpperCase()}</span>
+          <span style="font-size:1.1rem;">// MISSING: ${s.skill.toUpperCase()}</span>
           ${s.course_url ? `<a href="${s.course_url}" target="_blank" class="sug-link">LEARN SKILL</a>` : `<a href="https://www.google.com/search?q=learn+${encodeURIComponent(s.skill)}" target="_blank" class="sug-link">SEARCH PATH</a>`}
         </div>
-        <div class="mono" style="font-size:0.85rem; color:var(--text-dim); text-transform:uppercase;">PROTOCOL: ${s.resources.join(' | ')}</div>
+        <div class="mono" style="font-size:0.85rem; color:var(--text-dim); text-transform:uppercase;">PROTOCOL: ${s.protocol}</div>
       </div>
     `).join('') || '<div class="mono">// PROFILE OPTIMAL.</div>';
 

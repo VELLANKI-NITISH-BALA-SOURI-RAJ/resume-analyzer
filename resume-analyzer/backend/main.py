@@ -78,21 +78,23 @@ async def analyze_resume(
             detail="No recognizable skills found in the job description. Please provide a more detailed description."
         )
 
-    # Step 3: Semantic skill matching
-    match_result = compute_skill_similarity(resume_skills, job_skills)
-
-    # Step 4: Overall text similarity
-    text_sim = compute_text_similarity(resume_text, job_description)
-
-    # Step 5: Weighted score
-    score_data = calculate_weighted_score(
-        match_result["matched_skills"],
-        match_result["missing_skills"],
-        text_sim
-    )
-
-    # Step 6: Suggestions (AI Audit)
-    suggestions = generate_suggestions(match_result["missing_skills"], job_description)
+    # Step 3: Perform Full AI Audit (Gemini)
+    from backend.utils.ai_auditor import perform_full_audit
+    audit = perform_full_audit(resume_text, job_description)
+    
+    if not audit:
+        # Step 4: Fallback to BERT if Gemini fails
+        match_result = compute_skill_similarity(resume_skills, job_skills)
+        text_sim = compute_text_similarity(resume_text, job_description)
+        score_data = calculate_weighted_score(match_result["matched_skills"], match_result["missing_skills"], text_sim)
+        
+        audit = {
+            "score": score_data["final_score"],
+            "label": get_score_label(score_data["final_score"]),
+            "rationale": "Audit performed via BERT similarity protocol.",
+            "matched": [m["job_skill"] for m in match_result["matched_skills"]],
+            "missing": [{"skill": s, "protocol": "// SEARCH PROTOCOL REQUIRED.", "course_url": f"https://www.google.com/search?q={s}+course"} for s in match_result["missing_skills"]]
+        }
 
     return {
         "status": "success",
@@ -100,20 +102,21 @@ async def analyze_resume(
             "resume_skills": resume_skills,
             "total_skills_found": len(resume_skills)
         },
-        "job": {
-            "required_skills": job_skills,
-            "total_skills_required": len(job_skills)
-        },
         "match": {
-            "score": score_data["final_score"],
-            "label": get_score_label(score_data["final_score"]),
-            "skill_score": score_data["skill_score"],
-            "text_similarity_score": score_data["text_score"],
-            "breakdown": score_data["breakdown"],
-            "matched_skills": match_result["matched_skills"],
-            "missing_skills": match_result["missing_skills"]
+            "score": audit["score"],
+            "label": audit["label"],
+            "rationale": audit.get("rationale", "// NO RATIONALE PROVIDED."),
+            "matched_skills": audit["matched"],
+            "missing_skills": [m["skill"] for m in audit["missing"]],
+            "skill_score": audit["score"], # Gemini score is final
+            "text_similarity_score": audit["score"],
+            "breakdown": {
+                "total_job_skills": len(job_skills),
+                "matched_count": len(audit["matched"]),
+                "missing_count": len(audit["missing"])
+            }
         },
-        "suggestions": suggestions
+        "suggestions": audit["missing"]
     }
 
 
