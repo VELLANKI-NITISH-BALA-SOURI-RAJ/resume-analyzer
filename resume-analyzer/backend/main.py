@@ -83,7 +83,7 @@ async def analyze_resume(
     score_data = calculate_weighted_score(match_result["matched_skills"], match_result["missing_skills"], text_sim)
     
     # Step 4: STRATEGIC AI REFINEMENT (Gemini Senior Review)
-    from backend.utils.ai_auditor import perform_full_audit
+    from backend.utils.ai_auditor import perform_full_audit, get_static_fallback
     audit = perform_full_audit(
         resume_text, 
         job_description, 
@@ -97,9 +97,22 @@ async def analyze_resume(
             "score": score_data["final_score"],
             "label": get_score_label(score_data["final_score"]),
             "rationale": "Audit strictly limited to Local Neural BERT Protocol.",
-            "matched": [m["job_skill"] for m in match_result["matched_skills"]],
-            "missing": [{"skill": s, "protocol": "// SEARCH PROTOCOL.", "course_url": f"https://www.google.com/search?q={s}+course"} for s in match_result["missing_skills"]]
+            "matched": match_result["matched_skills"],
+            "missing": get_static_fallback(match_result["missing_skills"])
         }
+    else:
+        # Enrich Gemini's matched skills with BERT scores if available
+        bert_matches = {m["job_skill"]: m for m in match_result["matched_skills"]}
+        enriched = []
+        for skill in audit.get("matched", []):
+            if isinstance(skill, str):
+                if skill in bert_matches:
+                    enriched.append(bert_matches[skill])
+                else:
+                    enriched.append({"job_skill": skill, "score": 0.95})  # High confidence for AI matches
+            else:
+                enriched.append(skill)
+        audit["matched"] = enriched
 
     return {
         "status": "success",
@@ -112,7 +125,7 @@ async def analyze_resume(
             "label": audit["label"],
             "rationale": audit.get("rationale", "// NO RATIONALE PROVIDED."),
             "matched_skills": audit["matched"],
-            "missing_skills": [m["skill"] for m in audit["missing"]],
+            "missing_skills": [m["skill"] if isinstance(m, dict) else m for m in audit["missing"]],
             "skill_score": score_data["final_score"], # Still show your BERT score for transparency
             "text_similarity_score": score_data["text_score"], # Still show your text score
             "breakdown": {

@@ -190,6 +190,13 @@
     }
     .sug-link:hover { transform: translate(-3px, -3px); box-shadow: 7px 7px 0px var(--text-dim); }
 
+    .course-badge {
+      font-size: 0.65rem; font-weight: 900; padding: 4px 8px; border: 1.5px solid var(--border);
+      text-transform: uppercase; margin-left: 10px;
+    }
+    .badge-free { background: var(--text-main); color: var(--bg); }
+    .badge-paid { background: transparent; color: var(--text-main); }
+
     /* New Feature: Section Breakdown */
     .radar-row {
       display: flex; justify-content: space-between; border-bottom: 2px solid var(--tag-gap);
@@ -363,11 +370,23 @@
     const box = document.getElementById('suggestionsBox');
     box.innerHTML = suggestions.map(s => `
       <div class="protocol-step">
-        <div style="font-weight:900; margin-bottom:12px; display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 15px;">
+        <div style="font-weight:900; margin-bottom:12px; border-bottom: 1.5px solid var(--border); padding-bottom: 8px;">
           <span style="font-size:1.1rem;">// MISSING: ${s.skill.toUpperCase()}</span>
-          ${s.course_url ? `<a href="${s.course_url}" target="_blank" class="sug-link">LEARN SKILL</a>` : `<a href="https://www.google.com/search?q=learn+${encodeURIComponent(s.skill)}" target="_blank" class="sug-link">SEARCH PATH</a>`}
         </div>
-        <div class="mono" style="font-size:0.85rem; color:var(--text-dim); text-transform:uppercase;">PROTOCOL: ${s.protocol}</div>
+        <div class="mono" style="font-size:0.85rem; color:var(--text-dim); text-transform:uppercase; margin-bottom: 20px;">
+          PROTOCOL: ${s.protocol}
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          ${(s.top_courses || []).map(c => `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 2px solid var(--border); padding: 12px 20px;">
+              <div style="font-weight: 800; font-size: 0.9rem;">
+                ${c.name.toUpperCase()}
+                <span class="course-badge ${c.type.toLowerCase() === 'free' ? 'badge-free' : 'badge-paid'}">${c.type}</span>
+              </div>
+              <a href="${c.url}" target="_blank" class="sug-link" style="margin-top:0; padding: 8px 16px;">ENROLL</a>
+            </div>
+          `).join('')}
+        </div>
       </div>
     `).join('') || '<div class="mono">// PROFILE OPTIMAL.</div>';
 
@@ -384,12 +403,18 @@
 
   function renderMatched(matches) {
     const el = document.getElementById('matchedSkills');
-    el.innerHTML = matches.map(m => `
-      <div class="data-tag tag-active">
-        ${m.job_skill}
-        <div class="conf-marker">${Math.floor(m.score * 100)}%</div>
-      </div>
-    `).join('');
+    el.innerHTML = matches.map(m => {
+      const isObj = typeof m === 'object' && m !== null;
+      const name = isObj ? (m.job_skill || m.skill || "UNKNOWN") : m;
+      const score = isObj && m.score !== undefined ? Math.floor(m.score * 100) : 98;
+      
+      return `
+        <div class="data-tag tag-active">
+          ${name}
+          <div class="conf-marker">${score}%</div>
+        </div>
+      `;
+    }).join('') || '<div class="mono">// NO MATCHES DETECTED</div>';
   }
 
   function renderTags(id, tags, className) {
