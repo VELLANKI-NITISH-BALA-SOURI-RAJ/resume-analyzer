@@ -12,7 +12,7 @@ def perform_full_audit(resume_text: str, job_description: str, bert_results: Dic
     the context-aware score and course suggestions.
     """
     if not GEMINI_API_KEY:
-        print("// NEURAL AUDIT ERROR: GEMINI API KEY NOT DETECTED.")
+        print("// TALENT.SYNC ERROR: GEMINI API KEY NOT DETECTED.")
         return {}
 
     genai.configure(api_key=GEMINI_API_KEY)
@@ -69,7 +69,7 @@ def perform_full_audit(resume_text: str, job_description: str, bert_results: Dic
         audit_data = json.loads(text.strip())
         return audit_data
     except Exception as e:
-        print(f"// NEURAL AUDIT [FULL] FAILED. ERROR: {e}")
+        print(f"// TALENT.SYNC [FULL] FAILED. ERROR: {e}")
         return {}
 
 def get_static_fallback(missing_skills: List[str]) -> List[Dict]:

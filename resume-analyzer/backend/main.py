@@ -16,10 +16,10 @@ from backend.utils.skill_extractor import extract_skills
 from backend.utils.matcher import compute_skill_similarity, compute_text_similarity
 from backend.utils.scorer import calculate_weighted_score, get_score_label
 
-print(f"// NEURAL AUDIT INITIATED. KEY DETECTED: {'YES' if os.environ.get('GEMINI_API_KEY') else 'NO'}")
+print(f"// TALENT.SYNC INITIATED. KEY DETECTED: {'YES' if os.environ.get('GEMINI_API_KEY') else 'NO'}")
 
 app = FastAPI(
-    title="Resume Analyzer & Job Matcher",
+    title="TALENT.SYNC - AI Resume Matcher",
     description="AI-powered resume analysis using Hugging Face Transformers",
     version="1.0.0"
 )
